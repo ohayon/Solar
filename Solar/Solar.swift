@@ -25,13 +25,23 @@
 //
 
 import Foundation
+#if os(Linux)
+#else
 import CoreLocation
 
+extension CLLocationCoordinate2D: SolarCoordinate { }
+#endif
+
+public protocol SolarCoordinate {
+    var latitude: Double { get }
+    var longitude: Double { get }
+}
+
 public struct Solar {
-    
+
     /// The coordinate that is used for the calculation
-    public let coordinate: CLLocationCoordinate2D
-    
+    public let coordinate: SolarCoordinate
+
     /// The date to generate sunrise / sunset times for
     public fileprivate(set) var date: Date
     
@@ -46,6 +56,13 @@ public struct Solar {
     
     // MARK: Init
     
+#if os(Linux)
+    public init?(for date: Date = Date(), coordinate: any SolarCoordinate) {
+        self.date = date
+        self.coordinate = coordinate
+        calculate()
+    }
+#else
     public init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {
         self.date = date
         
@@ -58,7 +75,8 @@ public struct Solar {
         // Fill this Solar object with relevant data
         calculate()
     }
-    
+#endif
+
     // MARK: - Public functions
     
     /// Sets all of the Solar object's sunrise / sunset variables, if possible.
